@@ -2,6 +2,8 @@ package com.crud.java_crud_mysql;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
@@ -99,8 +101,32 @@ public class HelloController {
                 if (isInt(Dnumber, "Please input number for Dnumber")) {
                     if (isInt(Mgr_ssn, "Please input number for Mgr_ssn") && isValidSsn("Please input 9 digits for Mgr_ssn")) {
                         if (isDate(Mgr_start_due, "Please input valid date for Mgr_start_due")) {
-                            statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
-                            info.setText("Info : Inserted");
+                            // Find if the Dnumber is already in the database
+                            if (isDnumberExist(Dnumber.getText())) {
+                                info.setText("Info : Dnumber already exist");
+                            } else {
+                                statement.executeUpdate("INSERT INTO department VALUES (" + Dnumber.getText() + ", '" + Dname.getText() + "', " + Mgr_ssn.getText() + ", '" + Mgr_start_due.getText() + "')");
+                                info.setText("Info : Inserted successfully");
+                            }
+                            Alert alert = new Alert(Alert.AlertType.WARNING);
+                            alert.setTitle("Warning");
+                            alert.setHeaderText("No Dnumber found");
+                            alert.setContentText("There is not Dlocation under this Dnumber. Are you sure you want to insert?");
+                            alert.showAndWait().ifPresent(rs -> {
+                                if (rs == ButtonType.OK) {
+                                    System.out.println("Pressed OK.");
+                                    try {
+                                        statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
+                                    } catch (SQLException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    info.setText("Info : Inserted");
+                                }
+                                else if (rs == ButtonType.CANCEL) {
+                                    System.out.println("Pressed CANCEL.");
+                                }
+                            });
+
                         }
                     }
                 }
@@ -111,6 +137,20 @@ public class HelloController {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean isDnumberExist(String text) {
+        try {
+            Connection connection = DBConnect();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM department WHERE Dnumber = " + text);
+            if (resultSet.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     private boolean isValidSsn(String msg) {

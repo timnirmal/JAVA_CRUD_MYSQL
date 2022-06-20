@@ -1,0 +1,75 @@
+mysql> CREATE DATABASE ABC_company;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> USE ABC_company
+Database changed
+mysql> CREATE TABLE Department ( Dname varchar(20) NOT NULL, Dnumber int(5) NOT NULL, Mgr_ssn int(10) NOT NULL, Mgr_start_due date  NOT NULL, PRIMARY KEY(Dnumber));
+Query OK, 0 rows affected, 2 warnings (0.05 sec)
+
+mysql> show tables;
++-----------------------+
+| Tables_in_abc_company |
++-----------------------+
+| department            |
++-----------------------+
+1 row in set (0.03 sec)
+
+mysql> INSERT INTO Department VALUES
+    -> ('Research', 5, 333445555, '1988-05-22'),
+    -> ('Administration', 4, 987654321, '1995-01-01'),
+    -> ('Headquarters', 1, 888665555, '1981-06-19');
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Department;
++----------------+---------+-----------+---------------+
+| Dname          | Dnumber | Mgr_ssn   | Mgr_start_due |
++----------------+---------+-----------+---------------+
+| Headquarters   |       1 | 888665555 | 1981-06-19    |
+| Administration |       4 | 987654321 | 1995-01-01    |
+| Research       |       5 | 333445555 | 1988-05-22    |
++----------------+---------+-----------+---------------+
+3 rows in set (0.00 sec)
+
+mysql> DESC DEPARTMENT;
++---------------+-------------+------+-----+---------+-------+
+| Field         | Type        | Null | Key | Default | Extra |
++---------------+-------------+------+-----+---------+-------+
+| Dname         | varchar(20) | NO   |     | NULL    |       |
+| Dnumber       | int         | NO   | PRI | NULL    |       |
+| Mgr_ssn       | int         | NO   |     | NULL    |       |
+| Mgr_start_due | date        | NO   |     | NULL    |       |
++---------------+-------------+------+-----+---------+-------+
+4 rows in set (0.01 sec)
+
+mysql> CREATE TABLE DEPT_LOCATION(Dnumber INT(2) NOT NULL,Dlocation VARCHAR(20) NOT NULL,PRIMARY KEY(Dnumber,Dlocation),FOREIGN KEY(Dnumber) REFERENCES DEPARTMENT(Dnumber));
+Query OK, 0 rows affected, 1 warning (0.08 sec)
+
+mysql> INSERT INTO DEPT_LOCATION VALUES(1,'Houston'),(4,'Stafford'),(5,'Bellarie'),(5,'Sugarland'),(5,'Houston');
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM DEPARTMENT,DEPT_LOCATION WHERE DEPARTMENT.Dnumber=DEPT_LOCATION.Dnumber;
++----------------+---------+-----------+---------------+---------+-----------+
+| Dname          | Dnumber | Mgr_ssn   | Mgr_start_due | Dnumber | Dlocation |
++----------------+---------+-----------+---------------+---------+-----------+
+| Headquarters   |       1 | 888665555 | 1981-06-19    |       1 | Houston   |
+| Administration |       4 | 987654321 | 1995-01-01    |       4 | Stafford  |
+| Research       |       5 | 333445555 | 1988-05-22    |       5 | Bellarie  |
+| Research       |       5 | 333445555 | 1988-05-22    |       5 | Houston   |
+| Research       |       5 | 333445555 | 1988-05-22    |       5 | Sugarland |
++----------------+---------+-----------+---------------+---------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT D.Dname,D.Dnumber,D.Mgr_ssn,D.Mgr_start_due,L.Dlocation FROM DEPARTMENT D,DEPT_LOCATION L WHERE D.Dnumber=L.Dnumber;
++----------------+---------+-----------+---------------+-----------+
+| Dname          | Dnumber | Mgr_ssn   | Mgr_start_due | Dlocation |
++----------------+---------+-----------+---------------+-----------+
+| Headquarters   |       1 | 888665555 | 1981-06-19    | Houston   |
+| Administration |       4 | 987654321 | 1995-01-01    | Stafford  |
+| Research       |       5 | 333445555 | 1988-05-22    | Bellarie  |
+| Research       |       5 | 333445555 | 1988-05-22    | Houston   |
+| Research       |       5 | 333445555 | 1988-05-22    | Sugarland |
++----------------+---------+-----------+---------------+-----------+
+5 rows in set (0.00 sec)
+
