@@ -48,6 +48,8 @@ public class HelloController {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
+            // clear the info label
+            info.setText("Info : ");
             // Clear the Fields
             clearD();
 
@@ -74,12 +76,16 @@ public class HelloController {
     }
 
     private void clearD() {
-        // clear the info label
-        info.setText("Info : ");
         // clear Dname, Mgr_ssn, Mgr_start_due
         Dname.setText("");
         Mgr_ssn.setText("");
         Mgr_start_due.setText("");
+    }
+
+    private void clearDL() {
+        // clear Dnumber_DL, Dlocation_DL
+        Dnumber_DL.setText("");
+        Dlocation_DL.setText("");
     }
 
     public void onInsertClick(ActionEvent actionEvent) {
@@ -90,48 +96,25 @@ public class HelloController {
                 info.setText("Info : Please enter a DName");
             } else if (Dnumber.getText().isEmpty()) {
                 info.setText("Info : Please enter a DNumber");
-            }
-            else if (Mgr_ssn.getText().isEmpty()) {
+            } else if (Mgr_ssn.getText().isEmpty()) {
                 info.setText("Info : Please enter a Mgr_ssn");
-            }
-            else if (Mgr_start_due.getText().isEmpty()) {
+            } else if (Mgr_start_due.getText().isEmpty()) {
                 info.setText("Info : Please enter a Mgr_start_due");
-            }
-            else {
+            } else {
                 if (isInt(Dnumber, "Please input number for Dnumber")) {
                     if (isInt(Mgr_ssn, "Please input number for Mgr_ssn") && isValidSsn("Please input 9 digits for Mgr_ssn")) {
                         if (isDate(Mgr_start_due, "Please input valid date for Mgr_start_due")) {
                             // Find if the Dnumber is already in the database
-                            if (isDnumberExist(Dnumber.getText())) {
-                                info.setText("Info : Dnumber already exist");
+                            if (!isDnumberExist(Dnumber.getText())) {
+                                info.setText("Info : Error The Dnumber is already in the database. Try another number.");
                             } else {
-                                statement.executeUpdate("INSERT INTO department VALUES (" + Dnumber.getText() + ", '" + Dname.getText() + "', " + Mgr_ssn.getText() + ", '" + Mgr_start_due.getText() + "')");
+                                statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
                                 info.setText("Info : Inserted successfully");
                             }
-                            Alert alert = new Alert(Alert.AlertType.WARNING);
-                            alert.setTitle("Warning");
-                            alert.setHeaderText("No Dnumber found");
-                            alert.setContentText("There is not Dlocation under this Dnumber. Are you sure you want to insert?");
-                            alert.showAndWait().ifPresent(rs -> {
-                                if (rs == ButtonType.OK) {
-                                    System.out.println("Pressed OK.");
-                                    try {
-                                        statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
-                                    } catch (SQLException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                    info.setText("Info : Inserted");
-                                }
-                                else if (rs == ButtonType.CANCEL) {
-                                    System.out.println("Pressed CANCEL.");
-                                }
-                            });
-
                         }
                     }
                 }
             }
-
             //statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
             System.out.println("Inserted");
         } catch (SQLException e) {
@@ -166,7 +149,25 @@ public class HelloController {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
-            statement.executeUpdate("UPDATE department SET Dname = '" + Dname.getText() + "', Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "', Mgr_ssn = '" + Integer.parseInt(Mgr_ssn.getText()) + "', Mgr_start_due = '" + Mgr_start_due.getText() + "' WHERE Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "'");
+            if (Dnumber_DL.getText().isEmpty()) {
+                info.setText("Info : Please enter a DNumber to be updated");
+            } else if (Dname.getText().isEmpty()) {
+                info.setText("Info : Please enter a DName");
+            } else if (Mgr_ssn.getText().isEmpty()) {
+                info.setText("Info : Please enter a Mgr_ssn");
+            } else if (Mgr_start_due.getText().isEmpty()) {
+                info.setText("Info : Please enter a Mgr_start_due");
+            } else {
+                if (isInt(Dnumber_DL, "Please input number for Dnumber")) {
+                    if (isInt(Mgr_ssn, "Please input number for Mgr_ssn") && isValidSsn("Please input 9 digits for Mgr_ssn")) {
+                        if (isDate(Mgr_start_due, "Please input valid date for Mgr_start_due")) {
+                            statement.executeUpdate("UPDATE department SET Dname = '" + Dname.getText() + "', Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "', Mgr_ssn = '" + Integer.parseInt(Mgr_ssn.getText()) + "', Mgr_start_due = '" + Mgr_start_due.getText() + "' WHERE Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "'");
+                            info.setText("Info : Updated successfully");
+                        }
+                    }
+                }
+            }
+            // statement.executeUpdate("UPDATE department SET Dname = '" + Dname.getText() + "', Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "', Mgr_ssn = '" + Integer.parseInt(Mgr_ssn.getText()) + "', Mgr_start_due = '" + Mgr_start_due.getText() + "' WHERE Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "'");
             System.out.println("Updated");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -177,7 +178,16 @@ public class HelloController {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
-            statement.executeUpdate("DELETE FROM department WHERE Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "'");
+            if (Dnumber_DL.getText().isEmpty()) {
+                info.setText("Info : Please enter a DNumber to be deleted");
+            } else {
+                if (isInt(Dnumber_DL, "Please input number for Dnumber")) {
+                    statement.executeUpdate("DELETE FROM department WHERE Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "'");
+                    info.setText("Info : Deleted successfully");
+                    // Clear the Fields
+                    clearD();
+                }
+            }
             System.out.println("Deleted");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -188,10 +198,28 @@ public class HelloController {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
-            if (isInt(Dnumber_DL, "Please input integer for Dnumber")) {
-                ResultSet resultSet = statement.executeQuery("SELECT * FROM dept_location WHERE Dnumber = " + Integer.parseInt(Dnumber_DL.getText()));
-                while (resultSet.next()) {
-                    Dlocation_DL.setText(resultSet.getString("Dlocation"));
+            // clear the info label
+            info.setText("Info : ");
+            // Clear the Fields
+            Dlocation_DL.setText("");
+
+            if (Dnumber_DL.getText().isEmpty()) {
+                info.setText("Info : Please enter a DNumber to be searched");
+            } else {
+                if (isInt(Dnumber_DL, "Please input integer for Dnumber")) {
+                    ResultSet resultSet = statement.executeQuery("SELECT * FROM dept_location WHERE Dnumber = " + Integer.parseInt(Dnumber_DL.getText()));
+                    if (resultSet.next()) {
+                        Dlocation_DL.setText(resultSet.getString("Dlocation"));
+                    } else {
+                        info.setText("Info : No such Dnumber in the database");
+                    }
+//                    while (resultSet.next()) {
+//                        Dnumber_DL.setText(resultSet.getString("Dnumber"));
+//                        Dlocation_DL.setText(resultSet.getString("Dlocation"));
+//                    }
+                }
+                else {
+                    info.setText("Info : Please enter a DNumber to be searched");
                 }
             }
         } catch (SQLException e) {
@@ -204,9 +232,21 @@ public class HelloController {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
-            if (isInt(Dnumber_DL, "Please input integer for Dnumber")) {
-                statement.executeUpdate("INSERT INTO dept_location VALUES ('" + Integer.parseInt(Dnumber_DL.getText()) + "','" + Dlocation_DL.getText() + "')");
-                System.out.println("Inserted");
+            if (Dnumber_DL.getText().isEmpty()) {
+                info.setText("Info : Please enter a DNumber to be inserted");
+            } else if (Dlocation_DL.getText().isEmpty()) {
+                info.setText("Info : Please enter a Dlocation");
+            } else {
+                // if Dnumber is not in the database
+                if (!isDnumberExist(Dnumber_DL.getText())) {
+                    info.setText("Info : Error The Dnumber is not in the database. Try another number.");
+                }
+                else {
+                    if (isInt(Dnumber_DL, "Please input number for Dnumber")) {
+                        statement.executeUpdate("INSERT INTO dept_location VALUES ('" + Integer.parseInt(Dnumber_DL.getText()) + "','" + Dlocation_DL.getText() + "')");
+                        info.setText("Info : Inserted successfully");
+                    }
+                }
             }
             //statement.executeUpdate("INSERT INTO dept_location VALUES ('" + Integer.parseInt(Dnumber_DL.getText()) + "','" + Dlocation_DL.getText() + "')");
             System.out.println("Inserted");
@@ -219,9 +259,15 @@ public class HelloController {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
-            if (isInt(Dnumber_DL, "Please input integer for Dnumber")) {
-                statement.executeUpdate("UPDATE dept_location SET Dlocation = '" + Dlocation_DL.getText() + "' WHERE Dnumber = '" + Integer.parseInt(Dnumber_DL.getText()) + "'");
-                System.out.println("Updated");
+            if (Dnumber_DL.getText().isEmpty()) {
+                info.setText("Info : Please enter a DNumber to be updated");
+            } else if (Dlocation_DL.getText().isEmpty()) {
+                info.setText("Info : Please enter a Dlocation");
+            } else {
+                if (isInt(Dnumber_DL, "Please input number for Dnumber")) {
+                    statement.executeUpdate("UPDATE dept_location SET Dnumber = '" + Integer.parseInt(Dnumber_DL.getText()) + "', Dlocation = '" + Dlocation_DL.getText() + "' WHERE Dnumber = '" + Integer.parseInt(Dnumber_DL.getText()) + "'");
+                    info.setText("Info : Updated successfully");
+                }
             }
             //statement.executeUpdate("UPDATE dept_location SET Dnumber = '" + Integer.parseInt(Dnumber_DL.getText()) + "', Dlocation = '" + Dlocation_DL.getText() + "' WHERE Dnumber = '" + Integer.parseInt(Dnumber_DL.getText()) + "'");
             System.out.println("Updated");
@@ -234,9 +280,14 @@ public class HelloController {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
-            if (isInt(Dnumber_DL, "Please input integer for Dnumber")) {
-                statement.executeUpdate("DELETE FROM dept_location WHERE Dnumber = '" + Integer.parseInt(Dnumber_DL.getText()) + "'");
-                System.out.println("Deleted");
+            if (Dnumber_DL.getText().isEmpty()) {
+                info.setText("Info : Please enter a DNumber to be deleted");
+            } else {
+                if (isInt(Dnumber_DL, "Please input number for Dnumber")) {
+                    statement.executeUpdate("DELETE FROM dept_location WHERE Dnumber = '" + Integer.parseInt(Dnumber_DL.getText()) + "'");
+                    info.setText("Info : Deleted successfully");
+                    clearDL();
+                }
             }
             //statement.executeUpdate("DELETE FROM dept_location WHERE Dnumber = '" + Integer.parseInt(Dnumber_DL.getText()) + "'");
             System.out.println("Deleted");
@@ -303,3 +354,27 @@ public class HelloController {
 //        }
 //    }
 }
+
+
+
+
+/*
+Alert alert = new Alert(Alert.AlertType.WARNING);
+                            alert.setTitle("Warning");
+                            alert.setHeaderText("No Dnumber found");
+                            alert.setContentText("There is not Dlocation under this Dnumber. Are you sure you want to insert?");
+                            alert.showAndWait().ifPresent(rs -> {
+                                if (rs == ButtonType.OK) {
+                                    System.out.println("Pressed OK.");
+                                    try {
+                                        statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
+                                    } catch (SQLException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                    info.setText("Info : Inserted");
+                                }
+                                else if (rs == ButtonType.CANCEL) {
+                                    System.out.println("Pressed CANCEL.");
+                                }
+                            });
+* */
