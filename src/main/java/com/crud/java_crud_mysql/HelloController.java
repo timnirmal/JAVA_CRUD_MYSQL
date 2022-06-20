@@ -2,7 +2,9 @@ package com.crud.java_crud_mysql;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,6 +17,7 @@ import java.text.SimpleDateFormat;
 import static com.crud.java_crud_mysql.MyJDBC.DBConnect;
 
 public class HelloController {
+
     @FXML
     private TextField Dname;
     @FXML
@@ -36,12 +39,6 @@ public class HelloController {
 
     @FXML
     private Label info;
-
-    // update the label with the current time
-    @FXML
-    protected void onTimeButtonClick() {
-        Dname.setText(String.format("The time is %tT", System.currentTimeMillis()));
-    }
 
     @FXML
     protected void onSearchClick() {
@@ -75,21 +72,7 @@ public class HelloController {
         }
     }
 
-    private void clearD() {
-        // clear Dname, Mgr_ssn, Mgr_start_due
-        Dname.setText("");
-        Mgr_ssn.setText("");
-        Mgr_start_due.setText("");
-    }
-
-    private void clearDL() {
-        // clear Dnumber_DL, Dlocation_DL
-        Dnumber_DL.setText("");
-        Dlocation_DL.setText("");
-        Dlocation_List.setText("");
-    }
-
-    public void onInsertClick(ActionEvent actionEvent) {
+    public void onInsertClick() {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
@@ -103,8 +86,8 @@ public class HelloController {
                 info.setText("Info : Please enter a Mgr_start_due");
             } else {
                 if (isInt(Dnumber, "Please input number for Dnumber")) {
-                    if (isInt(Mgr_ssn, "Please input number for Mgr_ssn") && isValidSsn("Please input 9 digits for Mgr_ssn")) {
-                        if (isDate(Mgr_start_due, "Please input valid date for Mgr_start_due")) {
+                    if (isInt(Mgr_ssn, "Please input number for Mgr_ssn") && isValidSsn()) {
+                        if (isDate(Mgr_start_due)) {
                             // Find if the Dnumber is already in the database
                             if (isDnumberExist(Dnumber.getText())) {
                                 info.setText("Info : Error The Dnumber is already in the database. Try another number.");
@@ -116,47 +99,9 @@ public class HelloController {
                     }
                 }
             }
-            //statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
             System.out.println("Inserted");
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-    }
-
-    private boolean isDnumberExist(String text) {
-        try {
-            Connection connection = DBConnect();
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM department WHERE Dnumber = " + text);
-            if (resultSet.next()) {
-                return true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private boolean isDLnumberExist(String text) {
-        try {
-            Connection connection = DBConnect();
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM dept_location WHERE Dnumber = " + text);
-            if (resultSet.next()) {
-                return true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    private boolean isValidSsn(String msg) {
-        if (Mgr_ssn.getText().length() == 9) {
-            return true;
-        } else {
-            info.setText("Info : " + msg);
-            return false;
         }
     }
 
@@ -177,8 +122,8 @@ public class HelloController {
                     info.setText("Info : Error The Dnumber is not in the database. Try another number.");
                 } else {
                     if (isInt(Dnumber, "Please input number for Dnumber")) {
-                        if (isInt(Mgr_ssn, "Please input number for Mgr_ssn") && isValidSsn("Please input 9 digits for Mgr_ssn")) {
-                            if (isDate(Mgr_start_due, "Please input valid date for Mgr_start_due")) {
+                        if (isInt(Mgr_ssn, "Please input number for Mgr_ssn") && isValidSsn()) {
+                            if (isDate(Mgr_start_due)) {
                                 statement.executeUpdate("UPDATE department SET Dname = '" + Dname.getText() + "', Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "', Mgr_ssn = '" + Integer.parseInt(Mgr_ssn.getText()) + "', Mgr_start_due = '" + Mgr_start_due.getText() + "' WHERE Dnumber = '" + Integer.parseInt(Dnumber.getText()) + "'");
                                 info.setText("Info : Updated successfully");
                             }
@@ -193,7 +138,7 @@ public class HelloController {
         }
     }
 
-    public void onDeleteClick(ActionEvent actionEvent) {
+    public void onDeleteClick() {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
@@ -219,7 +164,7 @@ public class HelloController {
         }
     }
 
-    public void onSearchClick_DL(ActionEvent actionEvent) {
+    public void onSearchClick_DL() {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
@@ -264,8 +209,7 @@ public class HelloController {
         }
     }
 
-
-    public void onInsertClick_DL(ActionEvent actionEvent) {
+    public void onInsertClick_DL() {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
@@ -341,6 +285,20 @@ public class HelloController {
         }
     }
 
+    private void clearD() {
+        // clear Dname, Mgr_ssn, Mgr_start_due
+        Dname.setText("");
+        Mgr_ssn.setText("");
+        Mgr_start_due.setText("");
+    }
+
+    private void clearDL() {
+        // clear Dnumber_DL, Dlocation_DL
+        Dnumber_DL.setText("");
+        Dlocation_DL.setText("");
+        Dlocation_List.setText("");
+    }
+
     private boolean isInt(TextField f, String msg) {
         try {
             Integer.parseInt(f.getText());
@@ -352,74 +310,53 @@ public class HelloController {
         }
     }
 
-    private boolean isDate(TextField f, String msg) {
+    private boolean isDate(TextField f) {
         try {
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             df.parse(f.getText());
             return true;
         } catch (ParseException e) {
-            System.out.println("Info : " + msg);
-            info.setText("Info : " + msg);
+            System.out.println("Info : " + "Please input valid date for Mgr_start_due");
+            info.setText("Info : " + "Please input valid date for Mgr_start_due");
             return false;
         }
     }
 
-//    // on key pressed event in the text field
-//    @FXML
-//    protected void onKeyPressedDnumber_DL(ActionEvent actionEvent) {
-//        Dnumber.setText(Dnumber_DL.getText().toUpperCase());
-//    }
-//
-//    public static void numericOnly (javafx.scene.control.TextField textField) {
-//        textField.textProperty().addListener((observable, oldValue, newValue) -> {
-//            if (!newValue.matches("\\d*")) {
-//                textField.setText(newValue.replaceAll("[^\\d]", ""));
-//            }
-//        });
-//    }
+    private boolean isDnumberExist(String text) {
+        try {
+            Connection connection = DBConnect();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM department WHERE Dnumber = " + text);
+            if (resultSet.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
+    private boolean isDLnumberExist(String text) {
+        try {
+            Connection connection = DBConnect();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM dept_location WHERE Dnumber = " + text);
+            if (resultSet.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
-//    public class DateValidatorUsingDateFormat implements DateValidator {
-//        private String dateFormat;
-//
-//        public DateValidatorUsingDateFormat(String dateFormat) {
-//            this.dateFormat = dateFormat;
-//        }
-//
-//        @Override
-//        public boolean isValid(String dateStr) {
-//            DateFormat sdf = new SimpleDateFormat(this.dateFormat);
-//            sdf.setLenient(false);
-//            try {
-//                sdf.parse(dateStr);
-//            } catch (ParseException e) {
-//                return false;
-//            }
-//            return true;
-//        }
-//    }
+    private boolean isValidSsn() {
+        if (Mgr_ssn.getText().length() == 9) {
+            return true;
+        } else {
+            info.setText("Info : " + "Please input 9 digits for Mgr_ssn");
+            return false;
+        }
+    }
+
 }
-
-
-
-
-/*
-Alert alert = new Alert(Alert.AlertType.WARNING);
-                            alert.setTitle("Warning");
-                            alert.setHeaderText("No Dnumber found");
-                            alert.setContentText("There is not Dlocation under this Dnumber. Are you sure you want to insert?");
-                            alert.showAndWait().ifPresent(rs -> {
-                                if (rs == ButtonType.OK) {
-                                    System.out.println("Pressed OK.");
-                                    try {
-                                        statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
-                                    } catch (SQLException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                    info.setText("Info : Inserted");
-                                }
-                                else if (rs == ButtonType.CANCEL) {
-                                    System.out.println("Pressed CANCEL.");
-                                }
-                            });
-* */

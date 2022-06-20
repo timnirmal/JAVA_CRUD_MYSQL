@@ -73,3 +73,16 @@ mysql> SELECT D.Dname,D.Dnumber,D.Mgr_ssn,D.Mgr_start_due,L.Dlocation FROM DEPAR
 +----------------+---------+-----------+---------------+-----------+
 5 rows in set (0.00 sec)
 
+mysql> SELECT * FROM dept_location;
++---------+------------+
+| Dnumber | Dlocation  |
++---------+------------+
+|       1 | Houston    |
+|       4 | Stafford   |
+|       5 | Bellarie   |
+|       5 | Houston    |
+|       5 | Sugarland  |
++---------+------------+
+6 rows in set (0.00 sec)
+
+
