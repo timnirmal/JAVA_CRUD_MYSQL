@@ -9,6 +9,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import static com.crud.java_crud_mysql.MyJDBC.DBConnect;
 
@@ -43,12 +46,24 @@ public class HelloController {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM department WHERE Dnumber = " + Dnumber.getText());
+            // Clear the Fields
+            clearD();
 
-            while (resultSet.next()) {
-                Dname.setText(resultSet.getString("Dname"));
-                Mgr_ssn.setText(resultSet.getString("Mgr_ssn"));
-                Mgr_start_due.setText(resultSet.getString("Mgr_start_due"));
+            if (Dnumber.getText().isEmpty()) {
+                info.setText("Info : Please enter a DNumber");
+            } else {
+                if (isInt(Dnumber, "Please input number for Dnumber")) {
+                    ResultSet resultSet = statement.executeQuery("SELECT * FROM department WHERE Dnumber = " + Dnumber.getText());
+                    if (resultSet.next()) {
+                        Dname.setText(resultSet.getString("Dname"));
+                        Mgr_ssn.setText(resultSet.getString("Mgr_ssn"));
+                        Mgr_start_due.setText(resultSet.getString("Mgr_start_due"));
+                    } else {
+                        info.setText("Info : No such department");
+                    }
+                } else {
+                    info.setText("Info : Invalid Dnumber");
+                }
             }
 
         } catch (SQLException e) {
@@ -56,14 +71,54 @@ public class HelloController {
         }
     }
 
+    private void clearD() {
+        // clear the info label
+        info.setText("Info : ");
+        // clear Dname, Mgr_ssn, Mgr_start_due
+        Dname.setText("");
+        Mgr_ssn.setText("");
+        Mgr_start_due.setText("");
+    }
+
     public void onInsertClick(ActionEvent actionEvent) {
         try {
             Connection connection = DBConnect();
             Statement statement = connection.createStatement();
-            statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
+            if (Dname.getText().isEmpty()) {
+                info.setText("Info : Please enter a DName");
+            } else if (Dnumber.getText().isEmpty()) {
+                info.setText("Info : Please enter a DNumber");
+            }
+            else if (Mgr_ssn.getText().isEmpty()) {
+                info.setText("Info : Please enter a Mgr_ssn");
+            }
+            else if (Mgr_start_due.getText().isEmpty()) {
+                info.setText("Info : Please enter a Mgr_start_due");
+            }
+            else {
+                if (isInt(Dnumber, "Please input number for Dnumber")) {
+                    if (isInt(Mgr_ssn, "Please input number for Mgr_ssn") && isValidSsn("Please input 9 digits for Mgr_ssn")) {
+                        if (isDate(Mgr_start_due, "Please input valid date for Mgr_start_due")) {
+                            statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
+                            info.setText("Info : Inserted");
+                        }
+                    }
+                }
+            }
+
+            //statement.executeUpdate("INSERT INTO department VALUES ('" + Dname.getText() + "','" + Integer.parseInt(Dnumber.getText()) + "','" + Integer.parseInt(Mgr_ssn.getText()) + "','" + Mgr_start_due.getText() + "')");
             System.out.println("Inserted");
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    private boolean isValidSsn(String msg) {
+        if (Mgr_ssn.getText().length() == 9) {
+            return true;
+        } else {
+            info.setText("Info : " + msg);
+            return false;
         }
     }
 
@@ -155,6 +210,18 @@ public class HelloController {
             Integer.parseInt(f.getText());
             return true;
         } catch (NumberFormatException e) {
+            System.out.println("Info : " + msg);
+            info.setText("Info : " + msg);
+            return false;
+        }
+    }
+
+    private boolean isDate(TextField f, String msg) {
+        try {
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            df.parse(f.getText());
+            return true;
+        } catch (ParseException e) {
             System.out.println("Info : " + msg);
             info.setText("Info : " + msg);
             return false;
